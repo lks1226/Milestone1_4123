@@ -3,7 +3,7 @@
 .idea
 # Log file
 *.log
-
+.DS
 # BlueJ files
 *.ctxt
 
@@ -21,3 +21,14 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+/src/main/resources/Humidity/
+/src/main/resources/id/
+/src/main/resources/Intermediate/
+/src/main/resources/Station/
+/src/main/resources/Temperature/
+/src/main/resources/Timestamp/
+
+/target
+.DS_Store
+Milestone1_4123.iml
