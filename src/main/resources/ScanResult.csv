@@ -1,0 +1,131 @@
+Date,Station,Category,Value
+2003-01-28,Paya Lebar,Min Temperature,26.0
+2003-03-15,Paya Lebar,Min Temperature,30.0
+2003-11-11,Paya Lebar,Min Temperature,25.0
+2003-01-28,Paya Lebar,Max Temperature,26.0
+2003-03-15,Paya Lebar,Max Temperature,30.0
+2003-11-11,Paya Lebar,Max Temperature,25.0
+2013-01-08,Paya Lebar,Min Temperature,23.0
+2013-01-19,Paya Lebar,Min Temperature,23.0
+2013-02-10,Paya Lebar,Min Temperature,23.0
+2013-03-26,Paya Lebar,Min Temperature,24.0
+2013-04-14,Paya Lebar,Min Temperature,23.0
+2013-04-17,Paya Lebar,Min Temperature,23.0
+2013-05-16,Paya Lebar,Min Temperature,24.0
+2013-06-01,Paya Lebar,Min Temperature,24.0
+2013-06-05,Paya Lebar,Min Temperature,24.0
+2013-07-09,Paya Lebar,Min Temperature,24.0
+2013-07-27,Paya Lebar,Min Temperature,24.0
+2013-08-01,Paya Lebar,Min Temperature,23.0
+2013-08-11,Paya Lebar,Min Temperature,23.0
+2013-08-13,Paya Lebar,Min Temperature,23.0
+2013-09-07,Paya Lebar,Min Temperature,23.0
+2013-09-08,Paya Lebar,Min Temperature,23.0
+2013-09-25,Paya Lebar,Min Temperature,23.0
+2013-09-29,Paya Lebar,Min Temperature,23.0
+2013-10-15,Paya Lebar,Min Temperature,23.0
+2013-10-20,Paya Lebar,Min Temperature,23.0
+2013-10-28,Paya Lebar,Min Temperature,23.0
+2013-11-12,Paya Lebar,Min Temperature,23.0
+2013-11-13,Paya Lebar,Min Temperature,23.0
+2013-11-14,Paya Lebar,Min Temperature,23.0
+2013-11-23,Paya Lebar,Min Temperature,23.0
+2013-12-18,Paya Lebar,Min Temperature,22.0
+2013-01-07,Paya Lebar,Max Temperature,35.0
+2013-02-23,Paya Lebar,Max Temperature,34.0
+2013-02-28,Paya Lebar,Max Temperature,34.0
+2013-03-01,Paya Lebar,Max Temperature,35.0
+2013-03-31,Paya Lebar,Max Temperature,35.0
+2013-04-18,Paya Lebar,Max Temperature,36.0
+2013-05-12,Paya Lebar,Max Temperature,35.0
+2013-05-17,Paya Lebar,Max Temperature,35.0
+2013-06-05,Paya Lebar,Max Temperature,35.0
+2013-06-07,Paya Lebar,Max Temperature,35.0
+2013-06-13,Paya Lebar,Max Temperature,35.0
+2013-06-15,Paya Lebar,Max Temperature,35.0
+2013-06-18,Paya Lebar,Max Temperature,35.0
+2013-06-19,Paya Lebar,Max Temperature,35.0
+2013-06-20,Paya Lebar,Max Temperature,35.0
+2013-06-21,Paya Lebar,Max Temperature,35.0
+2013-06-22,Paya Lebar,Max Temperature,35.0
+2013-06-25,Paya Lebar,Max Temperature,35.0
+2013-07-21,Paya Lebar,Max Temperature,35.0
+2013-08-09,Paya Lebar,Max Temperature,33.0
+2013-08-24,Paya Lebar,Max Temperature,33.0
+2013-08-25,Paya Lebar,Max Temperature,33.0
+2013-08-31,Paya Lebar,Max Temperature,33.0
+2013-09-02,Paya Lebar,Max Temperature,33.0
+2013-09-22,Paya Lebar,Max Temperature,33.0
+2013-09-23,Paya Lebar,Max Temperature,33.0
+2013-09-24,Paya Lebar,Max Temperature,33.0
+2013-09-28,Paya Lebar,Max Temperature,33.0
+2013-09-29,Paya Lebar,Max Temperature,33.0
+2013-10-07,Paya Lebar,Max Temperature,34.0
+2013-10-08,Paya Lebar,Max Temperature,34.0
+2013-10-17,Paya Lebar,Max Temperature,34.0
+2013-11-05,Paya Lebar,Max Temperature,34.0
+2013-11-07,Paya Lebar,Max Temperature,34.0
+2013-11-13,Paya Lebar,Max Temperature,34.0
+2013-11-21,Paya Lebar,Max Temperature,34.0
+2013-11-27,Paya Lebar,Max Temperature,34.0
+2013-12-16,Paya Lebar,Max Temperature,35.0
+2003-01-28,Paya Lebar,Min Humidity   ,88.75
+2003-03-15,Paya Lebar,Min Humidity   ,62.25
+2003-11-11,Paya Lebar,Min Humidity   ,88.67
+2003-01-28,Paya Lebar,Max Humidity   ,88.75
+2003-03-15,Paya Lebar,Max Humidity   ,62.25
+2003-11-11,Paya Lebar,Max Humidity   ,88.67
+2013-01-07,Paya Lebar,Min Humidity   ,39.0
+2013-02-02,Paya Lebar,Min Humidity   ,49.36
+2013-03-04,Paya Lebar,Min Humidity   ,46.41
+2013-04-24,Paya Lebar,Min Humidity   ,23.85
+2013-05-19,Paya Lebar,Min Humidity   ,27.56
+2013-06-18,Paya Lebar,Min Humidity   ,39.0
+2013-06-19,Paya Lebar,Min Humidity   ,39.0
+2013-06-20,Paya Lebar,Min Humidity   ,39.0
+2013-06-21,Paya Lebar,Min Humidity   ,39.0
+2013-06-22,Paya Lebar,Min Humidity   ,39.0
+2013-07-14,Paya Lebar,Min Humidity   ,26.76
+2013-08-24,Paya Lebar,Min Humidity   ,49.36
+2013-09-30,Paya Lebar,Min Humidity   ,24.19
+2013-10-08,Paya Lebar,Min Humidity   ,43.88
+2013-11-19,Paya Lebar,Min Humidity   ,49.36
+2013-11-21,Paya Lebar,Min Humidity   ,49.36
+2013-12-16,Paya Lebar,Min Humidity   ,43.88
+2013-01-19,Paya Lebar,Max Humidity   ,100.0
+2013-01-20,Paya Lebar,Max Humidity   ,100.0
+2013-01-22,Paya Lebar,Max Humidity   ,100.0
+2013-02-03,Paya Lebar,Max Humidity   ,100.0
+2013-02-06,Paya Lebar,Max Humidity   ,100.0
+2013-02-07,Paya Lebar,Max Humidity   ,100.0
+2013-02-10,Paya Lebar,Max Humidity   ,100.0
+2013-02-14,Paya Lebar,Max Humidity   ,100.0
+2013-02-18,Paya Lebar,Max Humidity   ,100.0
+2013-02-25,Paya Lebar,Max Humidity   ,100.0
+2013-03-31,Paya Lebar,Max Humidity   ,94.27
+2013-04-17,Paya Lebar,Max Humidity   ,100.0
+2013-04-28,Paya Lebar,Max Humidity   ,100.0
+2013-05-11,Paya Lebar,Max Humidity   ,94.31
+2013-05-15,Paya Lebar,Max Humidity   ,94.31
+2013-06-02,Paya Lebar,Max Humidity   ,94.27
+2013-06-03,Paya Lebar,Max Humidity   ,94.27
+2013-06-04,Paya Lebar,Max Humidity   ,94.27
+2013-06-06,Paya Lebar,Max Humidity   ,94.27
+2013-07-26,Paya Lebar,Max Humidity   ,100.0
+2013-08-05,Paya Lebar,Max Humidity   ,100.0
+2013-08-11,Paya Lebar,Max Humidity   ,100.0
+2013-09-08,Paya Lebar,Max Humidity   ,100.0
+2013-09-25,Paya Lebar,Max Humidity   ,100.0
+2013-09-29,Paya Lebar,Max Humidity   ,100.0
+2013-10-09,Paya Lebar,Max Humidity   ,100.0
+2013-10-14,Paya Lebar,Max Humidity   ,100.0
+2013-10-15,Paya Lebar,Max Humidity   ,100.0
+2013-10-20,Paya Lebar,Max Humidity   ,100.0
+2013-10-28,Paya Lebar,Max Humidity   ,100.0
+2013-11-12,Paya Lebar,Max Humidity   ,100.0
+2013-11-13,Paya Lebar,Max Humidity   ,100.0
+2013-11-14,Paya Lebar,Max Humidity   ,100.0
+2013-11-23,Paya Lebar,Max Humidity   ,100.0
+2013-12-04,Paya Lebar,Max Humidity   ,100.0
+2013-12-08,Paya Lebar,Max Humidity   ,100.0
+2013-12-09,Paya Lebar,Max Humidity   ,100.0
