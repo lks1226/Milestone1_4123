@@ -202,7 +202,6 @@ public class Query {
                 int sectionIdx = idInt % (mediator.getPAGESIZE() / 8) * 8;
                 Page tempPage = mediator.getPage(3, columnName[3], thPage);
                 Page humPage = mediator.getPage(4, columnName[4], thPage);
-                System.out.println();
 
                 int year = Integer.parseInt(new String(Arrays.copyOfRange(inputBytes, ptr, ptr + 4)));
                 int month = Integer.parseInt(new String(Arrays.copyOfRange(inputBytes, ptr + 5, ptr + 7)));

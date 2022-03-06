@@ -104,7 +104,8 @@ public class Mediator {
 
     public void saveOutputAsText(String columnname, ArrayList<Integer> pagesInDisk) throws Exception {
         String header = "Date,Station,Category,Value";
-        FileWriter fw = new FileWriter(this.diskController.getBaseFilePath() + "ScanResult2.csv", true);
+        String outputFileName = "ScanResult.csv";
+        FileWriter fw = new FileWriter(this.diskController.getBaseFilePath() + outputFileName, true);
         BufferedWriter bw = new BufferedWriter(fw);
         bw.write(header);
         bw.newLine();
@@ -139,7 +140,7 @@ public class Mediator {
         }
 
         bw.close();
-        System.out.println("Output file generated at " + this.diskController.getBaseFilePath() + "ScanResult.csv");
+        System.out.println("Output file generated at " + this.diskController.getBaseFilePath() + outputFileName);
     }
 
 }
