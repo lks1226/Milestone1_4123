@@ -1,31 +1,20 @@
-import controller.DiskController;
-import controller.MemoryController;
+import controller.Mediator;
 import entity.Page;
 import utils.ByteConverter;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
 public class Query {
-    private final int MEMORYSIZE;
-    private final int PAGESIZE;
-    private final String[] columnName = {"id", "Timestamp", "Station", "Temperature", "Humidity", "Intermediate"};
-    private MemoryController memoryController;
-    private DiskController diskController;
+    private final static String[] columnName = {"id", "Timestamp", "Station", "Temperature", "Humidity", "Intermediate"};
+    private static Mediator mediator;
     private HashMap<String, Integer> stationInt = new HashMap<String, Integer>();
     private ArrayList<Integer> filteredDate;
     private int largerYear;
 
-    public Query(int MEMORYSIZE, int PAGESIZE, DiskController diskController) {
-        this.MEMORYSIZE = MEMORYSIZE;
-        this.PAGESIZE = PAGESIZE;
-        this.memoryController = new MemoryController(MEMORYSIZE, PAGESIZE);
-        this.diskController = diskController;
-
+    private Query() {
         this.stationInt.put("Changi", 1);
         this.stationInt.put("Paya Lebar", 2);
     }
@@ -43,10 +32,9 @@ public class Query {
 
         // Initialise the Disk storage
         System.out.println("Reading SingaporeWeather.csv to column stored files....");
-        DiskController diskController = new DiskController(PAGESIZE, FILEPATH);
-        diskController.init(FILENAME);
+        mediator = new Mediator(MEMORYSIZE, PAGESIZE, FILEPATH, FILENAME);
         System.out.println("Running the query......");
-        Query q = new Query(MEMORYSIZE, PAGESIZE, diskController);
+        Query q = new Query();
         ArrayList<Integer> p = q.matchYear(2003, 2013);
         ArrayList<Integer> p1 = q.matchStation("Paya Lebar", p);
         ArrayList<Integer> p2 = q.findMinMax(q.filteredDate);
@@ -69,18 +57,18 @@ public class Query {
 //            System.out.println(Arrays.toString(diskController.readFromFile("Intermediate/" + i).getBytes()));
 //        }
 
-        q.saveOutputAsText(p3);
+        mediator.saveOutputAsText(columnName[5], p3);
 
     }
 
-    public ArrayList<Integer> matchYear(int year1, int year2) throws Exception {
+    private ArrayList<Integer> matchYear(int year1, int year2) throws Exception {
         this.largerYear = Math.max(year1, year2);
-        int outputAddr = this.memoryController.reserveMemory("Year output buffer");
+        int outputAddr = mediator.reserveMemory("Year output buffer");
 
         ArrayList<Integer> outputDiskAddr = new ArrayList<Integer>();
 
-        for (int thInDisk = 0; thInDisk < diskController.getPageCounter()[1]; thInDisk++) {
-            Page p = getPage(1, thInDisk);
+        for (int thInDisk = 0; thInDisk < mediator.getPageCounter(1); thInDisk++) {
+            Page p = mediator.getPage(1, columnName[1], thInDisk);
             byte[] targetByte = (Integer.toString(year1)).getBytes();
             byte[] targetByte2 = (Integer.toString(year2)).getBytes();
             int ptr = 4;
@@ -92,11 +80,11 @@ public class Query {
 
                 if (Arrays.equals(yearBytes, targetByte) || (Arrays.equals(yearBytes, targetByte2))) {
                     byte[] result = Arrays.copyOfRange(bytes, ptr - 4, ptr + 17);
-                    int nextOutputBufferLoc = outputToMemory(outputAddr, result);
+                    int nextOutputBufferLoc = mediator.outputToMemory(outputAddr, result, columnName[5]);
                     // new output buffer is being used
                     if (nextOutputBufferLoc != outputAddr) {
                         outputAddr = nextOutputBufferLoc;
-                        outputDiskAddr.add(diskController.getPageCounter()[5] - 1);
+                        outputDiskAddr.add(mediator.getPageCounter(5) - 1);
                     }
                 }
 
@@ -106,22 +94,22 @@ public class Query {
         }
 
         // flush
-        flushToDisk(outputAddr);
-        outputDiskAddr.add(diskController.getPageCounter()[5] - 1);
+        mediator.flushToDisk(columnName[5], outputAddr);
+        outputDiskAddr.add(mediator.getPageCounter(5) - 1);
 
         return outputDiskAddr;
     }
 
-    public ArrayList<Integer> matchStation(String station, ArrayList<Integer> pagesInDisk) throws Exception {
+    private ArrayList<Integer> matchStation(String station, ArrayList<Integer> pagesInDisk) throws Exception {
         ArrayList<Integer> outputBufferAddrs = new ArrayList<Integer>();
-        int outputAddr = this.memoryController.reserveMemory("Station output buffer");
+        int outputAddr = mediator.reserveMemory("Station output buffer");
 
         ArrayList<Integer> filteredInputAddrs = new ArrayList<Integer>();
-        int filteredInputAddr = this.memoryController.reserveMemory("intermediate output buffer");
+        int filteredInputAddr = mediator.reserveMemory("intermediate output buffer");
 
         byte[] targetByte = ByteConverter.toByte(this.stationInt.get(station));
         for (Integer idx : pagesInDisk) {
-            byte[] inputBytes = getPage(5, idx).getBytes();
+            byte[] inputBytes = mediator.getPage(5, columnName[5], idx).getBytes();
             int ptr = 4;
             // The loop for previous result
             while (ptr < inputBytes.length && inputBytes[ptr] != '\0') {
@@ -129,7 +117,7 @@ public class Query {
                 byte[] date = Arrays.copyOfRange(inputBytes, ptr, ptr + 17);
                 int positionInt = ByteBuffer.wrap(position).getInt();
 
-                Page stationPage = getPage(2, positionInt / (this.PAGESIZE / 8));
+                Page stationPage = mediator.getPage(2, columnName[2], positionInt / (mediator.getPAGESIZE() / 8));
 
                 //loop for station page
                 int ptr1 = 4;
@@ -145,19 +133,20 @@ public class Query {
                         byte[] result = Arrays.copyOfRange(stationsBytes, ptr1 - 4, ptr1 + 4);
                         byte[] resultPrev = ByteConverter.combineBytes(position, date);
 
-                        int nextOutputBufferLoc = outputToMemory(outputAddr, result);
+                        int nextOutputBufferLoc = mediator.outputToMemory(outputAddr, result, columnName[5]);
+
                         // new output buffer is being used
                         if (nextOutputBufferLoc != outputAddr) {
                             outputAddr = nextOutputBufferLoc;
                             // output to memory will update page counter
-                            outputBufferAddrs.add(diskController.getPageCounter()[5] - 1);
+                            outputBufferAddrs.add(mediator.getPageCounter(5) - 1);
                         }
 
-                        int nextFilteredInputAddr = outputToMemory(filteredInputAddr, resultPrev);
+                        int nextFilteredInputAddr = mediator.outputToMemory(filteredInputAddr, resultPrev, columnName[5]);
                         if (nextFilteredInputAddr != filteredInputAddr) {
                             filteredInputAddr = nextFilteredInputAddr;
                             // output to memory will update page counter
-                            filteredInputAddrs.add(diskController.getPageCounter()[5] - 1);
+                            filteredInputAddrs.add(mediator.getPageCounter(5) - 1);
                         }
 
                     }
@@ -169,30 +158,20 @@ public class Query {
         }
 
         // flush
-        flushToDisk(outputAddr);
-        outputBufferAddrs.add(diskController.getPageCounter()[5] - 1);
+        mediator.flushToDisk(columnName[5], outputAddr);
+        outputBufferAddrs.add(mediator.getPageCounter(5) - 1);
 
         // flush
-        flushToDisk(filteredInputAddr);
-        filteredInputAddrs.add(diskController.getPageCounter()[5] - 1);
+        mediator.flushToDisk(columnName[5], filteredInputAddr);
+        filteredInputAddrs.add(mediator.getPageCounter(5) - 1);
 
         this.filteredDate = new ArrayList<Integer>(filteredInputAddrs);
         return outputBufferAddrs;
     }
 
-    // This function write page in memory to file
-    public void flushToDisk(int outputAddr) {
-        diskController.writeToFile(this.columnName[5], diskController.getPageCounter()[5],
-                outputAddr, memoryController.getMemory());
-        memoryController.addToPageTable_D2M(diskController.getPageCounter()[5] * 6 + 5, outputAddr);
-        memoryController.addToPageTable_M2D(outputAddr, diskController.getPageCounter()[5] * 6 + 5);
-        memoryController.releaseMemory(outputAddr);
-        diskController.setPageCounter(5, diskController.getPageCounter()[5] + 1);
-    }
-
     // Find the min and max value of temperature and humidity
-    public ArrayList<Integer> findMinMax(ArrayList<Integer> pagesInDisk) throws Exception {
-        int numMonthPerPage = (int) Math.floor((float) this.PAGESIZE / (31 * 8));
+    private ArrayList<Integer> findMinMax(ArrayList<Integer> pagesInDisk) throws Exception {
+        int numMonthPerPage = (int) Math.floor((float) mediator.getPAGESIZE() / (31 * 8));
         int numPagePerType = (int) Math.ceil((float) 12 / numMonthPerPage);
         int numPageRequired = numPagePerType * 4 * 2; // 4 types 2 yrs
         ArrayList<Integer> outputMemoryLoc = new ArrayList<Integer>();
@@ -202,16 +181,16 @@ public class Query {
         // Need to release all after each stage
 
         for (int i = 0; i < numPageRequired; i++) {
-            int memoryLoc = memoryController.reserveMemory("");
+            int memoryLoc = mediator.reserveMemory("");
             outputMemoryLoc.add(memoryLoc);
-            memoryController.getPage(memoryLoc).resetPage(this.PAGESIZE);
+            mediator.resetPage(memoryLoc);
         }
 
         int ctr = 1;
 
         for (Integer idx : pagesInDisk) {
             // prev stage filtered date output
-            byte[] inputBytes = getPage(5, idx).getBytes();
+            byte[] inputBytes = mediator.getPage(5, columnName[5], idx).getBytes();
             int ptr = 4;
             while (ptr < inputBytes.length) {
                 byte[] position = Arrays.copyOfRange(inputBytes, ptr - 4, ptr);
@@ -219,11 +198,10 @@ public class Query {
 
                 if (idInt == -1) break;
 //                System.out.printf("\nPosition : %s \n", Arrays.toString(position));
-                int thPage = idInt / (this.PAGESIZE / 8);
-                int sectionIdx = idInt % (this.PAGESIZE / 8) * 8;
-                Page tempPage = getPage(3, thPage);
-                Page humPage = getPage(4, thPage);
-                System.out.println();
+                int thPage = idInt / (mediator.getPAGESIZE() / 8);
+                int sectionIdx = idInt % (mediator.getPAGESIZE() / 8) * 8;
+                Page tempPage = mediator.getPage(3, columnName[3], thPage);
+                Page humPage = mediator.getPage(4, columnName[4], thPage);
 
                 int year = Integer.parseInt(new String(Arrays.copyOfRange(inputBytes, ptr, ptr + 4)));
                 int month = Integer.parseInt(new String(Arrays.copyOfRange(inputBytes, ptr + 5, ptr + 7)));
@@ -270,18 +248,18 @@ public class Query {
         }
 
         for (int i : outputMemoryLoc) {
-            flushToDisk(i);
-            outputDiskLoc.add(diskController.getPageCounter()[5] - 1);
+            mediator.flushToDisk(columnName[5], i);
+            outputDiskLoc.add(mediator.getPageCounter(5) - 1);
         }
         return outputDiskLoc;
 
     }
 
-    public void updateMin(int base, int idxMonth, int day, int pageSection, int ctr,
-                          float value, ArrayList<Integer> outputMemoryLoc) throws Exception {
+    private void updateMin(int base, int idxMonth, int day, int pageSection, int ctr,
+                           float value, ArrayList<Integer> outputMemoryLoc) {
         int outputPageIdx = base + idxMonth;
         int startIndexInPage = pageSection * 31 * 8;
-        Page outputPage = this.memoryController.getMemory().getStorage()[outputMemoryLoc.get(outputPageIdx)];
+        Page outputPage = mediator.getPageInMemory(outputMemoryLoc.get(outputPageIdx));
         float curVal = findValueInSection(startIndexInPage, startIndexInPage + (31 * 8), outputPage);
         byte[] ctrByte = ByteBuffer.allocate(4).putInt(ctr).array();
         byte[] valueByte = ByteBuffer.allocate(4).putFloat(value).array();
@@ -295,11 +273,11 @@ public class Query {
         }
     }
 
-    public void updateMax(int base, int idxMonth, int day, int pageSection, int ctr,
-                          float value, ArrayList<Integer> outputMemoryLoc) throws Exception {
+    private void updateMax(int base, int idxMonth, int day, int pageSection, int ctr,
+                           float value, ArrayList<Integer> outputMemoryLoc) {
         int outputPageIdx = base + idxMonth;
         int startIndexInPage = pageSection * 31 * 8;
-        Page outputPage = this.memoryController.getMemory().getStorage()[outputMemoryLoc.get(outputPageIdx)];
+        Page outputPage = mediator.getPageInMemory(outputMemoryLoc.get(outputPageIdx));
         float curVal = findValueInSection(startIndexInPage, startIndexInPage + (31 * 8), outputPage);
         byte[] ctrByte = ByteBuffer.allocate(4).putInt(ctr).array();
         byte[] valueByte = ByteBuffer.allocate(4).putFloat(value).array();
@@ -313,7 +291,7 @@ public class Query {
         }
     }
 
-    public float findValueInSection(int startIndexInPage, int endIndexInPage, Page outputPage) {
+    private float findValueInSection(int startIndexInPage, int endIndexInPage, Page outputPage) {
         for (int i = startIndexInPage; i < endIndexInPage; i += 8) {
             if (ByteConverter.bytesToInt(
                     Arrays.copyOfRange(outputPage.getBytes(), i, i + 4)).get(0) != 0) {
@@ -324,51 +302,11 @@ public class Query {
         return Float.parseFloat("NaN");
     }
 
-    // Write to file if full and return the new memory addr
-    private int outputToMemory(int outputAddr, byte[] objectToWrite) throws Exception {
-        Page outputBuffer = this.memoryController.getPage(outputAddr);
-        if (objectToWrite.length > outputBuffer.getRemainingByte()) {
-            int nextOutputAddr = this.memoryController.reserveMemory("New output buffer");
-            Page newOutputBuffer = this.memoryController.getPage(nextOutputAddr);
-            newOutputBuffer.resetPage(this.PAGESIZE);
-            newOutputBuffer.setBytes(objectToWrite, 0);
-            newOutputBuffer.setRemainingByte(newOutputBuffer.getRemainingByte() - objectToWrite.length);
-
-            diskController.writeToFile(this.columnName[5], diskController.getPageCounter()[5],
-                    outputAddr, memoryController.getMemory());
-            memoryController.addToPageTable_D2M(diskController.getPageCounter()[5] * 6 + 5, outputAddr);
-            memoryController.addToPageTable_M2D(outputAddr, diskController.getPageCounter()[5] * 6 + 5);
-
-            diskController.setPageCounter(5, diskController.getPageCounter()[5] + 1);
-            memoryController.releaseMemory(outputAddr);
-
-            return nextOutputAddr;
-        } else {
-            outputBuffer.setBytes(objectToWrite, outputBuffer.getPageSize() - outputBuffer.getRemainingByte());
-            outputBuffer.setRemainingByte(outputBuffer.getRemainingByte() - objectToWrite.length);
-            return outputAddr;
-        }
-    }
-
-    // This function give memory location or bring data in disk to memory
-    // Size = number of byte per record (position + data)
-    private Page getPage(int column, int thInDisk) throws Exception {
-        Page page;
-        int addrInDisk = thInDisk * 6 + column;
-        if (memoryController.checkPageTable_D2M(addrInDisk)) {
-            page = memoryController.getPage(memoryController.getMemoryAddr(addrInDisk));
-        } else {
-            int addrInMemory = memoryController.writeToMemory(addrInDisk,
-                    diskController.readFromFile(columnName[column] + "/" + thInDisk));
-            page = memoryController.getPage(addrInMemory);
-        }
-        return page;
-    }
-
-    public ArrayList<Integer> generateFinalOutput(ArrayList<Integer> pagesInDisk,
-                                                  ArrayList<Integer> filteredDate, ArrayList<Integer> filteredStation) throws Exception {
+    // This function will join all the intermediate tables value to form final output (in byte)
+    private ArrayList<Integer> generateFinalOutput(ArrayList<Integer> pagesInDisk,
+                                                   ArrayList<Integer> filteredDate, ArrayList<Integer> filteredStation) throws Exception {
         ArrayList<Integer> outputBufferAddrs = new ArrayList<Integer>();
-        int outputAddr = this.memoryController.reserveMemory("Station output buffer");
+        int outputAddr = mediator.reserveMemory("Station output buffer");
 
         for (int i = 0; i < pagesInDisk.size(); i++) {
             int idx = pagesInDisk.get(i);
@@ -382,7 +320,7 @@ public class Query {
             } else category += "Temperature";
 
             byte[] categoryByte = category.getBytes();
-            byte[] inputBytes = getPage(5, idx).getBytes();
+            byte[] inputBytes = mediator.getPage(5, columnName[5], idx).getBytes();
             for (int ptr = 4; ptr < inputBytes.length; ptr += 8) {
                 byte[] position = Arrays.copyOfRange(inputBytes, ptr - 4, ptr);
                 int positionInt = ByteBuffer.wrap(position).getInt() - 1;
@@ -392,13 +330,13 @@ public class Query {
                 }
                 byte[] valueByte = Arrays.copyOfRange(inputBytes, ptr, ptr + 4);
 
-                int thPage_date = positionInt / (this.PAGESIZE / 21);
-                int idxInPage_date = (positionInt % (this.PAGESIZE / 21)) * 21;
-                int thPage_station = positionInt / (this.PAGESIZE / 8);
-                int idxInPage_station = (positionInt % (this.PAGESIZE / 8)) * 8;
+                int thPage_date = positionInt / (mediator.getPAGESIZE() / 21);
+                int idxInPage_date = (positionInt % (mediator.getPAGESIZE() / 21)) * 21;
+                int thPage_station = positionInt / (mediator.getPAGESIZE() / 8);
+                int idxInPage_station = (positionInt % (mediator.getPAGESIZE() / 8)) * 8;
 
-                Page page_date = getPage(5, filteredDate.get(thPage_date));
-                Page page_station = getPage(5, filteredStation.get(thPage_station));
+                Page page_date = mediator.getPage(5, columnName[5], filteredDate.get(thPage_date));
+                Page page_station = mediator.getPage(5, columnName[5], filteredStation.get(thPage_station));
 
                 byte[] dateByte = Arrays.copyOfRange(page_date.getBytes(), idxInPage_date + 4,
                         idxInPage_date + 14);
@@ -410,59 +348,20 @@ public class Query {
                 record = ByteConverter.combineBytes(record, categoryByte);
                 record = ByteConverter.combineBytes(record, valueByte);
 
-                int nextOutputBufferLoc = outputToMemory(outputAddr, record);
+                int nextOutputBufferLoc = mediator.outputToMemory(outputAddr, record, columnName[5]);
                 // new output buffer is being used
                 if (nextOutputBufferLoc != outputAddr) {
                     outputAddr = nextOutputBufferLoc;
                     // output to memory will update page counter
-                    outputBufferAddrs.add(diskController.getPageCounter()[5] - 1);
+                    outputBufferAddrs.add(mediator.getPageCounter(5) - 1);
                 }
             }
         }
 
-        flushToDisk(outputAddr);
-        outputBufferAddrs.add(diskController.getPageCounter()[5] - 1);
+        mediator.flushToDisk(columnName[5], outputAddr);
+        outputBufferAddrs.add(mediator.getPageCounter(5) - 1);
         return outputBufferAddrs;
     }
 
-    public void saveOutputAsText(ArrayList<Integer> pagesInDisk) throws Exception {
-        String header = "Date,Station,Category,Value";
-        FileWriter fw = new FileWriter(this.diskController.getBaseFilePath() + "ScanResult.csv", true);
-        BufferedWriter bw = new BufferedWriter(fw);
-        bw.write(header);
-        bw.newLine();
-
-        for (Integer idx : pagesInDisk) {
-            int ptr = 0;
-            byte[] bytes = getPage(5, idx).getBytes();
-
-            while (ptr < this.PAGESIZE) {
-                String date = new String(Arrays.copyOfRange(bytes, ptr, ptr + 10));
-                ptr += 10;
-
-                if (date.getBytes()[0] == '\0') break;
-
-                int stationInt = ByteConverter.bytesToInt(Arrays.copyOfRange(bytes,
-                        ptr, ptr + 4)).get(0);
-                String station = stationInt == 1 ? "Changi" : "Paya Lebar";
-                ptr += 4;
-
-                String category = new String(Arrays.copyOfRange(bytes, ptr, ptr + 15));
-                ptr += 15;
-
-                float value = ByteConverter.bytesToFloat(Arrays.copyOfRange(bytes,
-                        ptr, ptr + 4)).get(0);
-                ptr += 4;
-
-                bw.write(date + "," + station + "," + category + "," + value);
-                bw.newLine();
-
-            }
-
-        }
-
-        bw.close();
-        System.out.println("Output file generated at " + this.diskController.getBaseFilePath() + "ScanResult.csv");
-    }
 }
 
